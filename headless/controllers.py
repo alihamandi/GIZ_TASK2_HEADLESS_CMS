@@ -13,6 +13,10 @@ class DataSchema(Schema):
     content: str
 
 
+class ContentSchema(Schema):
+    content: str
+
+
 @posts_controller.get('')
 def list_posts(request):
     files = os.listdir("posts/")
@@ -24,37 +28,60 @@ def list_posts(request):
     return data
 
 
+@posts_controller.get('{title}')
+def list_post(request, title: str):
+    files = os.listdir("posts/")
+    if (title + extension) in files:
+        with open(path + title + extension) as post:
+            content = post.readlines()
+            return {title: content}
+
+
 @posts_controller.post('')
 def post_posts(request, data_in: DataSchema):
 
-    with open(path + data_in.title + extension, 'w') as file:
-        file.write(data_in.content)
+    files = os.listdir("posts/")
 
-    return os.listdir("posts/")
+    if not (data_in.title + extension) in files:
+
+        with open(path + data_in.title + extension, 'w') as file:
+            file.write(data_in.content)
+
+        files = os.listdir("posts/")
+
+        for i in range(len(files)):
+            with open(path + files[i]) as content:
+                lines = content.readlines()
+                data[os.path.splitext(files[i])[0]] = lines
+
+        return data
+
+    else:
+        return {"status": "Not created, file already exist", "files": os.listdir("posts/")}
 
 
-@posts_controller.put('')
-def post_update(request, post: DataSchema):
+@posts_controller.put('{title}')
+def post_update(request, title: str, content: ContentSchema):
 
     files = os.listdir("posts/")
-    print(files)
-    if (post.title + extension) in files:
-        with open(path + post.title + extension, 'w') as file:
-            file.write(post.content)
-        with open(path + post.title + extension) as new_file:
-            return {"status": "Successfully updated", "new_data": {post.title: new_file.readlines()[0]}}
+
+    if (title + extension) in files:
+        with open(path + title + extension, 'w') as file:
+            file.write(content.content)
+        with open(path + title + extension) as new_file:
+            return {"status": "Successfully updated", "new_data": {title: new_file.readlines()}}
     else:
         return "There is no such file"
 
 
-@posts_controller.delete('{in_file_name}')
-def post_delete(request, in_file_name: str):
-    file_name = in_file_name.split(".")[0]
+@posts_controller.delete('{title}')
+def post_delete(request, title: str):
+
     files = os.listdir("posts/")
 
-    if (file_name + extension) in files:
-        os.remove(path + file_name + extension)
+    if (title + extension) in files:
+        os.remove(path + title + extension)
         return {"status": "Successfully deleted", "new_data": os.listdir("posts/")}
 
     else:
-        return "There is no such file"
+        return {"status": "Not deleted, there is no such file", "new_data": os.listdir("posts/")}
