@@ -42,7 +42,7 @@ def post_update(request, post: DataSchema):
         with open(path + post.title + extension, 'w') as file:
             file.write(post.content)
         with open(path + post.title + extension) as new_file:
-            return {"status": "Successfully updated", "new_data": [post.title, new_file.readlines()[0]]}
+            return {"status": "Successfully updated", "new_data": {post.title: new_file.readlines()[0]}}
     else:
         return "There is no such file"
 
