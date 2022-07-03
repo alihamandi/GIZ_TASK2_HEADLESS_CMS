@@ -70,6 +70,7 @@ def post_update(request, title: str, content: ContentSchema):
             file.write(content.content)
         with open(path + title + extension) as new_file:
             return {"status": "Successfully updated", "new_data": {title: new_file.readlines()}}
+
     else:
         return "There is no such file"
 

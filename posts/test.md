@@ -1,3 +1,0 @@
-world
-of
-worlds
